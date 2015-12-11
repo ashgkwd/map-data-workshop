@@ -99,6 +99,14 @@ CSE.submitForm = function(event) {
     CSE.map.panTo([CSE.currentLatLng.lat, CSE.currentLatLng.lng]);
 };
 
+// Plot new markers
+CSE.buildMarkers = function(markers) {
+    markers.forEach(function(mark){
+        L.circleMarker([mark.lat, mark.lng], CSE.markers.synced)
+        .addTo(CSE.map);
+    })
+}
+
 // Undo the marker
 CSE.removeMarker = function(marker) {
     event.preventDefault();
@@ -143,7 +151,7 @@ CSE.makeMap = function() {
     CSE.tiles = L.tileLayer('//14.139.123.7/tiles/basemap/{z}/{x}/{y}/tile.png', {
         useCache: true,
         saveToCache: false,
-        maxZoom: 18,
+        maxZoom: 13,
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
             '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Style by <a href="http://mapbox.com">Mapbox</a>'
     }).addTo(CSE.map);
@@ -267,4 +275,15 @@ CSE.makeMap = function() {
             });
         });
     });
+
+    // When we load page, get points from server
+    CSE.xhr = new XMLHttpRequest();
+    CSE.xhr.open('get', 'http://localhost:3000/all_points', true);
+    CSE.xhr.send();
+    CSE.xhr.onreadystatechange = function() {
+        if(CSE.xhr.readyState == 4 && CSE.xhr.status == 200) {
+            CSE.buildMarkers(JSON.parse(CSE.xhr.responseText));
+        }
+    };
+
 };
