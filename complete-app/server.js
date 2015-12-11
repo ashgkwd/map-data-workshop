@@ -4,7 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var pg = require("pg");
 var path = require('path');
-var credentials = require("./credentials");
+var creds = require("./credentials");
 
 app.use(express.static('public'));
 
@@ -40,7 +40,18 @@ app.get('/', function (req, res, next) {
         }
     });
 
-})
+});
+
+app.get('/all_points', function(req, res) {
+    var sql = 'SELECT id, descrip, lat, lng FROM points;';
+    queryPg(sql, '', function(err, result) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.json(result.rows);
+        }
+    });
+});
 
 io.on('connection', function(socket){
     console.log('a user connected');
@@ -70,7 +81,7 @@ io.on('connection', function(socket){
 
 var queryPg = function(sql, params, callback) {
     pg.connect(
-        "postgres://" + creds.pg.user + "@" + creds.pg.host + ":" + creds.pg.port + "/" + creds.pg.db, 
+        "postgres://" + creds.pg.user + "@" + creds.pg.host + ":" + creds.pg.port + "/" + creds.pg.database, 
         function(err, client, done) {
             if (err) {
                 console.log("error", "error connecting - " + err);
